@@ -70,3 +70,11 @@ test('sanitizeImport drops junk', () => {
     expenses: [{ id: 'e', desc: 'd', amount: 100, payer: 'zzz', split: { type: 'equal', who: ['a'] } }, { id: 'e2', desc: 'd', amount: 100, payer: 'a', split: { type: 'equal', who: ['a'] } }], payments: [] }] });
   assert.strictEqual(r.groups[0].members.length, 1); assert.strictEqual(r.groups[0].expenses.length, 1);
 });
+
+test('absurd amounts rejected', () => {
+  assert.strictEqual(C.validateExpense({ desc: 'x', amount: 1e15, payer: 'a', split: { type: 'equal', who: ['a'] } }), 'amount');
+});
+test('uneven split sums exactly (100.00 / 3)', () => {
+  const r = C.computeShares({ amount: 10000, split: { type: 'equal', who: ['a', 'b', 'c'] } });
+  assert.strictEqual(r.a + r.b + r.c, 10000);
+});

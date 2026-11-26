@@ -63,7 +63,7 @@
   // Returns null if valid, else an error code.
   function validateExpense(exp) {
     if (!exp.desc || !String(exp.desc).trim()) return 'desc';
-    if (!(exp.amount > 0) || !isFinite(exp.amount)) return 'amount';
+    if (!(exp.amount > 0) || !isFinite(exp.amount) || exp.amount > 100000000000) return 'amount';
     if (!exp.payer) return 'payer';
     var s = exp.split || {};
     if (s.type === 'exact') {

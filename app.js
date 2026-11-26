@@ -112,7 +112,7 @@
 
   function expView(g) {
     if (!g.expenses.length) return '<div class="empty"><div class="big">🧾</div><h2>' + t('noExpenses') + '</h2><p>' + t('noExpensesSub') + '</p></div>';
-    var list = g.expenses.slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || 0; });
+    var list = g.expenses.slice().reverse().sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || 0; });
     var h = '<div class="receipt zig">';
     list.forEach(function (e) {
       var n = Object.keys(C.computeShares(e)).length;

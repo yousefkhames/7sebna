@@ -55,6 +55,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await click('[data-a=close]');
   // dark mode screenshot
   await click('[data-a=settings]'); await click('[data-a=theme][data-v=dark]'); await click('[data-a=close]'); await p.screenshot({ path: shots + '/07-dark.png' });
+  // export/import round trip
+  await click('[data-a=settings]');
+  const data = await p.evaluate(() => localStorage.getItem('7sebna.v1'));
+  const before = JSON.parse(data).groups.length;
+  require('fs').writeFileSync('/tmp/imp.json', JSON.stringify({ groups: JSON.parse(data).groups.slice(0, 1) }));
+  const fi = await p.$('#ifile'); await fi.uploadFile('/tmp/imp.json'); await sleep(300);
+  assert.equal(JSON.parse(await p.evaluate(() => localStorage.getItem('7sebna.v1'))).groups.length, before + 1, 'import added a group');
+  require('fs').writeFileSync('/tmp/bad.json', '{nope');
+  await click('[data-a=settings]'); const fi2 = await p.$('#ifile'); await fi2.uploadFile('/tmp/bad.json'); await sleep(200);
+  assert.ok((await txt()).includes('valid') || (await txt()).includes('صالح'));
   assert.deepEqual(errs, [], 'console errors: ' + errs.join('|'));
   await b.close(); console.log('E2E PASS');
 })().catch(e => { console.error('E2E FAIL', e.message); process.exit(1); });
