@@ -147,7 +147,7 @@
       h += '<div class="tx"><div class="who">' + av(g, p.from) + '<b>' + esc(mem(g, p.from).name) + '</b><span class="arrow">→</span>' + av(g, p.to) + '<b>' + esc(mem(g, p.to).name) + '</b></div><span class="amt">' + money(p.amount, g.currency) + '</span><button class="btn sm" data-a="pay" data-i="' + i + '">✓ ' + t('markPaid') + '</button></div>';
     });
     h += '</div>';
-    if (plan.length) h += '<div class="acts"><button class="btn ghost" data-a="copy">📋 ' + t('copySummary') + '</button></div>';
+    if (plan.length) h += '<div class="acts"><button class="btn ghost" data-a="copy">' + t('copySummary') + '</button></div>';
     if (g.payments.length) {
       h += '<div class="receipt"><h2>' + t('history') + '</h2>';
       g.payments.slice().reverse().forEach(function (p) {
