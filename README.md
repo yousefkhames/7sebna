@@ -7,6 +7,15 @@
 
 ![Screens](docs/overview.png)
 
+## Screenshots
+
+Captured from the live site (https://yousefkhames.github.io/7sebna/).
+
+<p>
+  <img src="docs/screenshots/live-desktop.png" alt="7sebna desktop view" width="640">
+  <img src="docs/screenshots/live-mobile.png" alt="7sebna mobile view" width="200">
+</p>
+
 ## What it does
 
 Make a group (a flat, a trip, a night out), add the people, log who paid what, and 7sebna works out who owes whom. The settlement plan uses at most *n − 1* payments for *n* people. Tap "Mark paid" when someone transfers the money and the balances update.
