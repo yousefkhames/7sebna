@@ -49,7 +49,7 @@ npm i puppeteer-core && PPT=puppeteer-core node tests/e2e.js   # browser click-t
 
 - Data is per browser and per device. There is no sync and no shared group: each person would see only their own copy. Use the JSON export or the copied summary to share.
 - Clearing site data erases your groups. Export a backup if it matters.
-- Settlement is a greedy matching. It always clears every balance in at most n − 1 payments, but it does not search for the theoretical minimum in rare cases.
+- Settlement is the true minimum number of payments for groups of up to 15 people with an open balance (exact search for the most separate zero-sum clusters, then matching inside each). Beyond 15 people it falls back to a greedy match, which still clears every balance in at most n − 1 payments.
 - One currency per group, no exchange rates.
 - It records payments; it does not move money.
 - Arabic text was reviewed by the author only, not by a professional translator.

@@ -103,8 +103,9 @@
     return b;
   }
 
-  // Greedy: always match largest debtor with largest creditor. At most n-1 transfers.
-  function settle(bal) {
+  // Greedy matching inside one zero-sum group: largest debtor pays largest creditor.
+  // At most (group size - 1) transfers.
+  function greedy(bal) {
     var cr = [], de = [];
     Object.keys(bal).forEach(function (i) {
       if (bal[i] > 0) cr.push({ id: i, v: bal[i] });
@@ -119,6 +120,52 @@
       c.v -= x; d.v -= x;
       if (c.v === 0) cr.shift();
       if (d.v === 0) de.shift();
+    }
+    return out;
+  }
+
+  // Fewest transfers. Transfers needed = people with a balance minus the number of
+  // separate zero-sum clusters we can split them into, so we find the largest set of
+  // disjoint zero-sum clusters (bitmask DP, exact up to 15 people with a balance) and
+  // settle each cluster greedily. Above 15 people it falls back to plain greedy.
+  var EXACT_LIMIT = 15;
+  function settle(bal) {
+    var ids = Object.keys(bal).filter(function (i) { return bal[i] !== 0; }).sort();
+    var n = ids.length;
+    if (n === 0) return [];
+    if (n > EXACT_LIMIT) return greedy(bal);
+    var N = 1 << n, sum = new Array(N), best = new Int8Array(N), pick = new Int32Array(N);
+    sum[0] = 0;
+    for (var m = 1; m < N; m++) {
+      var low = m & -m, bit = 31 - Math.clz32(low);
+      sum[m] = sum[m ^ low] + bal[ids[bit]];
+    }
+    // best[m] = max number of disjoint zero-sum clusters inside m; pick[m] = a cluster achieving it
+    for (var mask = 1; mask < N; mask++) {
+      var lowBit = mask & -mask, rest = mask ^ lowBit, bv = 0, bp = 0;
+      // enumerate submasks of mask that contain its lowest bit
+      for (var sub = rest; ; sub = (sub - 1) & rest) {
+        var cl = sub | lowBit;
+        if (sum[cl] === 0) {
+          var v = 1 + best[mask ^ cl];
+          if (v > bv) { bv = v; bp = cl; }
+        }
+        if (sub === 0) break;
+      }
+      // leftover people with no zero-sum cluster cannot happen for the full set (total is 0),
+      // but a sub-mask may not be zero-sum overall: allow skipping its lowest person.
+      var skip = best[rest];
+      if (skip >= bv) { bv = skip; bp = 0; }
+      best[mask] = bv; pick[mask] = bp;
+    }
+    var out = [], mask2 = N - 1;
+    while (mask2) {
+      var cl2 = pick[mask2];
+      if (!cl2) { mask2 &= mask2 - 1; continue; }
+      var part = {};
+      for (var k = 0; k < n; k++) if (cl2 & (1 << k)) part[ids[k]] = bal[ids[k]];
+      out = out.concat(greedy(part));
+      mask2 ^= cl2;
     }
     return out;
   }

@@ -78,3 +78,41 @@ test('uneven split sums exactly (100.00 / 3)', () => {
   const r = C.computeShares({ amount: 10000, split: { type: 'equal', who: ['a', 'b', 'c'] } });
   assert.strictEqual(r.a + r.b + r.c, 10000);
 });
+
+test('settle finds the true minimum number of transfers', () => {
+  // two independent pairs: greedy over the whole set would use 3, optimal is 2
+  const b = { a: 5, b: 5, c: -5, d: -5 };
+  const plan = C.settle(b); assert.strictEqual(plan.length, 2);
+  // clusters {b,e} and {a,c,d,f} => 6 people - 2 clusters = 4 transfers
+  const b2 = { a: 700, b: 300, c: 200, d: -600, e: -300, f: -300 };
+  const p2 = C.settle(b2);
+  const after = { ...b2 }; p2.forEach(p => { after[p.from] += p.amount; after[p.to] -= p.amount; });
+  assert.ok(Object.values(after).every(v => v === 0));
+  assert.strictEqual(p2.length, 4); // {a,d}+{b,e}... clusters: a-d 600 leaves 100; best is 2 clusters => 6-2=4
+});
+test('settle exact minimum vs brute force on random small groups', () => {
+  function brute(bal) {
+    const ids = Object.keys(bal).filter(i => bal[i] !== 0), n = ids.length;
+    let bestClusters = 0;
+    function go(rem, cnt) {
+      if (!rem.length) { bestClusters = Math.max(bestClusters, cnt); return; }
+      const first = rem[0], others = rem.slice(1);
+      for (let m = 0; m < (1 << others.length); m++) {
+        const grp = [first, ...others.filter((_, k) => m & (1 << k))];
+        if (grp.reduce((s, i) => s + bal[i], 0) === 0) go(others.filter((_, k) => !(m & (1 << k))), cnt + 1);
+      }
+    }
+    go(ids, 0);
+    return n - bestClusters;
+  }
+  let seed = 7; const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  for (let r = 0; r < 300; r++) {
+    const n = 2 + Math.floor(rnd() * 7), bal = {}; let s = 0;
+    for (let i = 0; i < n - 1; i++) { const v = Math.round((rnd() - 0.5) * 10) * 100; bal['p' + i] = v; s += v; }
+    bal['p' + (n - 1)] = -s;
+    const plan = C.settle(bal);
+    const after = { ...bal }; plan.forEach(p => { after[p.from] += p.amount; after[p.to] -= p.amount; });
+    assert.ok(Object.values(after).every(v => v === 0));
+    assert.strictEqual(plan.length, brute(bal), JSON.stringify(bal));
+  }
+});
