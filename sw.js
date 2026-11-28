@@ -1,4 +1,4 @@
-const V = '7sebna-v1', FILES = ['./', 'index.html', 'style.css', 'core.js', 'app.js', 'logo.svg', 'manifest.webmanifest'];
+const V = '7sebna-v2', FILES = ['assets/yk-logo.svg', './', 'index.html', 'style.css', 'core.js', 'app.js', 'logo.svg', 'manifest.webmanifest'];
 self.addEventListener('install', e => e.waitUntil(caches.open(V).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== V).map(x => caches.delete(x)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => { if (e.request.method !== 'GET') return;
